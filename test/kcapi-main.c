@@ -4626,11 +4626,7 @@ static int cavs_hkdf(struct kcapi_cavs *cavs_test, uint32_t loops)
 	size_t mdhexlen = cavs_test->outlen * 2 + 1;
 	ssize_t ret = 1;
 
-	if (!loops) {
-		printf("PBKDF suggested iteration count: %u\n",
-		       kcapi_pbkdf_iteration_count(cavs_test->cipher, 0));
-		return 0;
-	}
+	(void)loops;
 
 	if (cavs_test->aligned) {
 		if (posix_memalign((void *)&outbuf, pagesize, cavs_test->outlen))

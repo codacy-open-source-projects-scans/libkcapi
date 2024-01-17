@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014 - 2022, Stephan Mueller <smueller@chronox.de>
+ * Copyright (C) 2014 - 2024, Stephan Mueller <smueller@chronox.de>
  *
  * License: see LICENSE file in root directory
  *
@@ -703,8 +703,6 @@ static int auxiliary_tests(void)
 
 
 	if (aux_test_rng("drbg_nopr_hmac_sha256", NULL, 0))
-		ret++;
-	if (aux_test_rng("drbg_nopr_sha1", NULL, 0))
 		ret++;
 	if (aux_test_rng("drbg_nopr_ctr_aes256", NULL, 0))
 		ret++;

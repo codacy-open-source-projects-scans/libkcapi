@@ -1,0 +1,99 @@
+name: checks
+on: [push, pull_request]
+jobs:
+    build:
+        runs-on: ubuntu-22.04
+        strategy:
+            fail-fast: false
+            matrix:
+                compiler:
+                - { cc: clang }
+                - { cc: clang, env: "CFLAGS=-flto\nLDFLAGS=-flto" }
+                # Ubuntu 22.04 ships with GCC 11 as the default version
+                - { cc: gcc }
+                - { cc: gcc, env: "CFLAGS=-flto\nLDFLAGS=-flto" }
+                -
+                    cc: gcc-9
+                    env: |
+                        NO_32BIT_TEST=1
+                        AR=gcc-ar-9
+                        NM=gcc-nm-9
+                        RANLIB=gcc-ranlib-9
+                -
+                    cc: gcc-10
+                    env: |
+                        NO_32BIT_TEST=1
+                        AR=gcc-ar-10
+                        NM=gcc-nm-10
+                        RANLIB=gcc-ranlib-10
+                -
+                    cc: gcc-10
+                    env: |
+                        NO_32BIT_TEST=1
+                        AR=gcc-ar-10
+                        NM=gcc-nm-10
+                        RANLIB=gcc-ranlib-10
+                        CFLAGS=-flto
+                        LDFLAGS=-flto
+                -
+                    cc: gcc-12
+                    env: |
+                        NO_32BIT_TEST=1
+                        AR=gcc-ar-12
+                        NM=gcc-nm-12
+                        RANLIB=gcc-ranlib-12
+                -
+                    cc: gcc-12
+                    env: |
+                        NO_32BIT_TEST=1
+                        AR=gcc-ar-12
+                        NM=gcc-nm-12
+                        RANLIB=gcc-ranlib-12
+                        CFLAGS=-flto
+                        LDFLAGS=-flto
+        steps:
+        - uses: actions/checkout@v2
+        - name: Install dependencies
+          run: |
+            sudo apt-get update -y
+            sudo apt-get install -y \
+                pkg-config \
+                openssl \
+                cppcheck \
+                xmlto \
+                docbook-utils \
+                gcc-multilib \
+                ${{ matrix.compiler.cc }}
+            echo "CC=${{ matrix.compiler.cc }}" >> $GITHUB_ENV
+            echo "${{ matrix.compiler.env }}" >> $GITHUB_ENV
+        - name: Configure build
+          run: |
+            autoreconf -i
+            ./configure \
+                --prefix=/usr \
+                --enable-kcapi-hasher \
+                --enable-kcapi-test \
+                --enable-kcapi-rngapp \
+                --enable-kcapi-encapp \
+                --enable-kcapi-dgstapp \
+                --enable-lib-asym \
+                --enable-lib-kpp
+        - name: Run build
+          run: make -j$(nproc)
+        - name: Run install
+          run: sudo make install
+        - name: Check installed binaries FIPS self-checks
+          env:
+            KCAPI_HASHER_FORCE_FIPS: 1
+          run: |
+            rc=0
+            /usr/bin/kcapi-hasher -n sha512hmac /bin/true || rc=$?
+            /usr/libexec/libkcapi/sha512hmac /bin/true || rc=$?
+            /usr/libexec/libkcapi/fipshmac /bin/true || rc=$?
+            exit $rc
+        - name: Run cppcheck
+          run: make cppcheck
+        - name: Run CLang static analysis
+          run: make scan
+        - name: Run tests
+          run: cd test && bash ./test-invocation.sh

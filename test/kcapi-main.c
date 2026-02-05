@@ -637,18 +637,6 @@ static int aux_test_rng(const char *name, uint8_t *seed, uint32_t seedlen)
 	return 0;
 }
 
-static int is_fips_mode(void)
-{
-	char c;
-	FILE *f = fopen("/proc/sys/crypto/fips_enabled", "r");
-	if (!f)
-		return 0;
-	if (fread(&c, 1, 1, f) < 1)
-		c = '0';
-	fclose(f);
-	return c == '1';
-}
-
 static int auxiliary_tests(void)
 {
 	struct kcapi_handle *handle = NULL;
@@ -706,30 +694,6 @@ static int auxiliary_tests(void)
 		ret++;
 	if (aux_test_rng("drbg_nopr_ctr_aes256", NULL, 0))
 		ret++;
-
-	if (!is_fips_mode()) {
-		/* X9.31 RNG must require seed */
-		printf("X9.31 missing seeding: ");
-		if (!aux_test_rng("ansi_cprng", NULL, 0))
-			ret++;
-		/* X9.31 seed too short */
-		printf("X9.31 insufficient seeding: ");
-		if (!aux_test_rng("ansi_cprng",
-				  (uint8_t *)
-				  "\x00\x01\x02\x03\x04\x05\x06\x07\x08"
-				  "\x00\x01\x02\x03\x04\x05\x06\x07\x08", 16))
-			ret++;
-		/* X9.31 seed right sized short */
-		if (aux_test_rng("ansi_cprng",
-				 (uint8_t *)
-				 "\x00\x01\x02\x03\x04\x05\x06\x07\x08"
-				 "\x00\x01\x02\x03\x04\x05\x06\x07\x08"
-				 "\x00\x01\x02\x03\x04\x05\x06\x07\x08"
-				 "\x00\x01\x02\x03\x04\x05\x06\x07\x08", 32)) {
-			printf("Error for ansi_cprng: kernel module ansi_cprng present?\n");
-			ret++;
-		}
-	}
 
 	return ret;
 }

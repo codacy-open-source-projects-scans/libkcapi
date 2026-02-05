@@ -11,7 +11,7 @@ dnl 		     enhancements, bug fixes only. Versions with
 dnl		     a decimal point are pre-releases.
 m4_define([__KCAPI_MAJVERSION], [1])
 m4_define([__KCAPI_MINVERSION], [5])
-m4_define([__KCAPI_PATCHLEVEL], [0])
+m4_define([__KCAPI_PATCHLEVEL], [1])
 m4_define([KCAPI_VERSION], [__KCAPI_MAJVERSION.__KCAPI_MINVERSION.__KCAPI_PATCHLEVEL])
 
 AC_INIT([libkcapi], [KCAPI_VERSION])
@@ -31,8 +31,8 @@ AC_PATH_PROG([OPENSSL], [openssl])
 AC_PATH_PROG([CLANG], [clang])
 AC_PATH_PROG([CPPCHECK], [cppcheck])
 AC_PATH_PROG([XMLTO], [xmlto])
-AC_PATH_PROG([DB2PDF], [db2pdf])
-AC_PATH_PROG([DB2PS], [db2ps])
+AC_PATH_PROG([DB2PDF], [docbook2pdf])
+AC_PATH_PROG([DB2PS], [docbook2ps])
 AC_PATH_PROG([MKTEMP], [mktemp])
 
 AC_SEARCH_LIBS(clock_gettime,rt)
